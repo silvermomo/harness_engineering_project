@@ -1,13 +1,19 @@
 #!/bin/bash
 # Skill 01: 需求分析
 # 生成项目文档：API文档、数据库Schema、数据模型
+# 自动创建变更记录
 
 TASK_ID="$1"
 DEMAND="$2"
 TASK_DIR=".harness/tasks/task-${TASK_ID}"
 DOCS_DIR=".harness/docs"
+CHANGES_DIR=".harness/changes"
 
 mkdir -p "$DOCS_DIR"
+mkdir -p "$CHANGES_DIR"
+
+CHANGE_ID="CHG-$(date +%Y%m%d%H%M%S)"
+CREATE_TIME=$(date "+%Y-%m-%d %H:%M:%S")
 
 echo -e "📋  分析需求并生成项目文档..."
 
@@ -25,7 +31,78 @@ analyze_demand() {
     fi
 }
 
+analyze_change_type() {
+    local demand="$1"
+
+    if echo "$demand" | grep -qi "修复\|bug\|错误"; then
+        echo "Bug Fix"
+    elif echo "$demand" | grep -qi "重构\|优化\|改进"; then
+        echo "Refactoring"
+    else
+        echo "Feature"
+    fi
+}
+
 TYPE=$(analyze_demand "$DEMAND")
+CHANGE_TYPE=$(analyze_change_type "$DEMAND")
+
+# 创建变更记录
+cat > "$CHANGES_DIR/${CHANGE_ID}.md" <<EOF
+# 变更记录 - ${CHANGE_ID}
+
+## 基本信息
+
+| 字段 | 内容 |
+|------|------|
+| 变更ID | ${CHANGE_ID} |
+| 变更类型 | ${CHANGE_TYPE} |
+| 状态 | In Progress |
+| 创建时间 | ${CREATE_TIME} |
+| 来源需求 | ${DEMAND} |
+
+## 变更详情
+
+### 变更描述
+${DEMAND}
+
+### 变更原因
+满足用户提出的业务需求
+
+### 影响范围
+- 后端模块: 待定
+- 前端模块: 待定
+- 数据库: 待定
+
+## 关联文档
+
+- API规范: \`.harness/docs/api-spec.md\`
+- 数据库设计: \`.harness/docs/database-schema.md\`
+- 项目上下文: \`.harness/docs/project-context.md\`
+
+## 任务执行记录
+
+### Skill 01: 需求分析
+- 状态: ✅ 完成
+- 执行时间: ${CREATE_TIME}
+- 产出: 项目文档、变更记录
+
+### Skill 02-06: 待执行
+- 状态: Pending
+
+---
+
+*由 Harness Engineering 智能体工作流自动生成*
+EOF
+
+# 更新汇总文档
+SUMMARY_FILE="$CHANGES_DIR/SUMMARY.md"
+if [ -f "$SUMMARY_FILE" ]; then
+    # 移除注释模板行，添加新的变更记录
+    sed -i '' "/<!-- | CHG-001 |/d" "$SUMMARY_FILE"
+    sed -i '' "/<!-- - \[CHG-001\]/d" "$SUMMARY_FILE"
+    sed -i '' "/<!-- - \[CHG-001\]/d" "$SUMMARY_FILE"
+    sed -i '' "s/| CHG-001 | Feature | 后台账号管理功能 | Completed | 2026-05-22 |/| CHG-001 | Feature | 后台账号管理功能 | Completed | 2026-05-22 |\n| ${CHANGE_ID} | ${CHANGE_TYPE} | ${DEMAND} | In Progress | ${CREATE_TIME} |/" "$SUMMARY_FILE"
+fi
 
 case $TYPE in
 "USER_ACCOUNT")
@@ -148,7 +225,7 @@ cat > "$DOCS_DIR/project-context.md" <<EOF
 
 ## 项目结构
 
-```
+\`\`\`
 backend/
 ├── src/main/java/com/harness/admin/
 │   ├── config/          # 配置类
@@ -167,7 +244,7 @@ frontend/
 │   ├── store/         # Pinia状态管理
 │   ├── utils/         # 工具函数
 │   └── views/         # 页面组件
-```
+\`\`\`
 
 ## 安全机制
 
@@ -186,7 +263,13 @@ $DEMAND
 ## 需求类型
 $TYPE
 
+## 变更记录
+- 变更ID: ${CHANGE_ID}
+- 状态: In Progress
+
 ## 生成文档
+- ✅ .harness/changes/${CHANGE_ID}.md - 变更记录
+- ✅ .harness/changes/SUMMARY.md - 变更历史汇总
 - ✅ .harness/docs/api-spec.md - API规范
 - ✅ .harness/docs/database-schema.md - 数据库设计
 - ✅ .harness/docs/project-context.md - 项目上下文
@@ -201,6 +284,8 @@ $TYPE
 EOF
 
 echo -e "✅  需求分析完成"
+echo -e "   📄  变更记录: $CHANGES_DIR/${CHANGE_ID}.md"
+echo -e "   📄  变更历史: $CHANGES_DIR/SUMMARY.md"
 echo -e "   📄  API文档: $DOCS_DIR/api-spec.md"
 echo -e "   📄  数据库Schema: $DOCS_DIR/database-schema.md"
 echo -e "   📄  项目上下文: $DOCS_DIR/project-context.md"
