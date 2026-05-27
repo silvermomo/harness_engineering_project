@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
@@ -9,17 +9,21 @@ spring:
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+  sql:
+    init:
+      mode: always
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
 
 jwt:
-  secret: harness-engineering-admin-secret-key-2024
+  secret: 5Jlk0QDa64gPdfsP8drshaPWqogEb6eFTitEq+WKey/KjvQLmMFe8UNtHLTLpE8UEnDymu6FyAyilQBlnLX4hg==
   expiration: 86400000
 
 admin:

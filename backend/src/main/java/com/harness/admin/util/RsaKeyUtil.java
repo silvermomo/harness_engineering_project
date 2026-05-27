@@ -31,7 +31,7 @@ public class RsaKeyUtil {
     }
 
     public String decryptByPrivateKey(String encryptedText) throws Exception {
-        byte[] encryptedBytes = Base64.getDecoder().decode(encryptedText);
+        byte[] encryptedBytes = Base64.getMimeDecoder().decode(encryptedText.replace('-', '+').replace('_', '/'));
 
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKey));
         KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);

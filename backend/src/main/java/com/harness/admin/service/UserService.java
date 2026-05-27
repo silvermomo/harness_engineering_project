@@ -34,6 +34,7 @@ public class UserService {
         try {
             String decryptedPassword = rsaKeyUtil.decryptByPrivateKey(request.getEncryptedPassword());
             log.info("User login attempt: {}", request.getUsername());
+            log.info("Decrypted password length: {}", decryptedPassword.length());
 
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -66,7 +67,7 @@ public class UserService {
                     )
             );
         } catch (Exception e) {
-            log.error("Login failed for user: {}, error: {}", request.getUsername(), e.getMessage());
+            log.error("Login failed for user: {}, error: {}", request.getUsername(), e.getMessage(), e);
             throw new RuntimeException("登录失败: " + e.getMessage());
         }
     }
